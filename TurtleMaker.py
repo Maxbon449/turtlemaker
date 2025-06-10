@@ -5,6 +5,23 @@ hungry = 2 # 0 ~ 4 까지. 0 = 매우 배고픔, 4 = 매우 배부름
 feeling = 0 # -2 ~ 2 까지. -2 = 매우 나쁨, 2 = 매우 좋음
 speed = 1.0
 
+# 대회에서 경쟁할 거북이를 만드는 함수.
+def MakeEnemy():
+    t1 = t.Turtle()
+    t2 = t.Turtle()
+    t3 = t.Turtle()
+    t4 = t.Turtle()
+
+    arr = (t1,t2,t3,t4) # 만든 거북이를 배열에 담음.
+    t.colormode(255)
+
+    for i in range(4):
+        arr[i].hideturtle() # 거북이가 보이지 않게함.
+        arr[i].shape('turtle')
+        arr[i].penup() # 거북이가 선을 그리지 않게함.
+        arr[i].color(random.randint(0,255),random.randint(0,255),random.randint(0,255)) # 거북이마다 랜덤한 색깔
+    return arr # 거북이를 담은 배열을 반환
+
 # text 업데이트를 위한 함수
 def UpdateText(text = None): # 처음으로 메서드가 실행될 때 create_text 를 실행하기 위해서 디폴트 값을 설정
     global hungry
@@ -134,13 +151,44 @@ def Walk(player):
         print("즐겁게 산책을 마쳤습니다.")
         Better()
         
+# 대회 나가기
+def end(arr):
+    global speed
+    global feeling
+    
+    arrSpeed = [0,0,0,0] # 경쟁 거북이들의 속도를 담음.
+    # 경쟁 거북이들과 주인공 거북이를 출발점에 놓음
+    arr[0].goto(-500,40)
+    arr[1].goto(-500,20)
+    arr[2].goto(-500,-20)
+    arr[3].goto(-500,-40)
+    
+    player.goto(-500,0)
+    # 경쟁 거북이들의 속도를 랜덤하게 결정 및 거북이들을 보이게 만듬.
+    for i in range(4):
+        arrSpeed[i] = random.randint(10,20)
+        arr[i].showturtle()
+    
+    while True:
+        player.forward(speed+feeling*2) # speed + feeling * 2 만큼 앞으로 나감.
+        if(player.xcor() >= 400): # 주인공 거북이가 먼저 목표한 위치에 도달하면 승리
+            print("축하합니다! 대회에서 우승했습니다!")
+            return -1 # 승리를 알리기 위해 -1 반환
+        
+        for i in range(4):
+            arr[i].forward(arrSpeed[i])
+            if(arr[i].xcor() >= 400): # 경쟁 거북이들중 한 마리라도 먼저 도착하면 패배.
+                print("아쉽습니다. 다음에 다시 도전해보세요.")
+                for j in range(4): # 경쟁 거북이들을 다시 숨김
+                    arr[j].hideturtle()
+                player.goto(0,0) # 플레이어를 다시 원점에 가져다 놓음.
+                return 0 # 패배를 알리기 위해 0 반환
 
-# def end():
-
-player = t.Turtle()
+player = t.Turtle() # 주인공 거북이 생성
 player.shape('turtle')
+player.penup() 
 text = UpdateText() # 첫 실행이므로 매개변수로 아무것도 전달하지 않음.
-
+arr = MakeEnemy() # 경쟁 할 거북이들이 담긴 배열
 
 while True:
     text = UpdateText(text) # 첫 실행이 아니므로 text 값을 전달해서 업데이트 하도록 함.
@@ -152,3 +200,7 @@ while True:
         Exercise()
     elif n == 3:
         Walk(player)
+    elif n == 4:
+        x = end(arr) # 승리를 감지하기 위한 변수 x
+        if x == -1: # 만약 승리했다면 while 문을 종료함. 아니면 계속 반복.
+            break
